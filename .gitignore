@@ -1,0 +1,16 @@
+node_modules
+/tmp
+/.env
+/.gitsetup
+/.git-hooks-local
+*.DS_Store
+*.swo
+*.swp
+*.bak
+*.local
+*~
+.#*
+/TAGS
+docker-compose.override.yml
+
+OAUTH.json
