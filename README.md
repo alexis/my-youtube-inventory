@@ -34,6 +34,9 @@ This Node.js project fetches and processes videos from your YouTube playlists an
   - Add yourself as a test user (https://console.cloud.google.com/apis/credentials/consent)
   - Run `npm start` to authorize the script in the browser and fetch sample data to make sure that everything's working
     (Note: This saves your access token locally in `./OAUTH.json`, so do this at your own risk)
+
+## Usage
+
 ```shell
 npx myti-collect
 ```
