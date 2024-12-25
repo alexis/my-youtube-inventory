@@ -33,8 +33,9 @@ I created this project to have a reliable way to look through the videos I've ad
 
 ## Usage
 
+Fetch your personal playlists and store the information in `myti.csv`:
+
 ```shell
-npx myti-collect
+npx myti
 ```
 
-Fetch the your personal playlists and store the information in `videos.csv`.
