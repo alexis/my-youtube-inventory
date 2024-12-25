@@ -4,15 +4,19 @@ import "#src/warning-workaround.js";
 import "dotenv/config";
 
 import { program } from "commander";
-import { createObjectCsvWriter } from "csv-writer";
+import { createWriteStream, existsSync } from "fs";
+import { stringify } from "csv-stringify";
 
 import Credentials from "#src/credentials.js";
 import YouTube from "#src/youtube.js";
 import VideoCollection from "#src/video-collection.js";
+import { escapeNL } from "#src/utils.js";
 
 program
-  .option("-o, --output <file>", "output CSV file name", "videos.csv")
+  .option("-o, --output <file>", "output CSV file name", "youtube-listing.csv")
   .option("-m, --max <number>", "maximum number of items to fetch", 0)
+  .option("--stdout", "output to stdout instead of a file")
+  .option("--force", "overwrite existing output file")
   .parse(process.argv);
 
 const opts = program.opts();
@@ -22,6 +26,13 @@ const opts = program.opts();
     const auth = await Credentials.acquire();
     const collection = new VideoCollection();
     const youtube = new YouTube(auth);
+
+    if (existsSync(opts.output) && !opts.force && !opts.stdout) {
+      console.error(
+        `File ${opts.output} already exists. Use --force to overwrite.`,
+      );
+      process.exit(1);
+    }
 
     console.log(`Fetching ${opts.max || "all"} playlist items...`);
 
@@ -47,26 +58,34 @@ const opts = program.opts();
 
     console.log(`\nExtracted ${collection.size()} videos`);
 
-    // Prepare CSV data
-    const csvWriter = createObjectCsvWriter({
-      path: opts.output,
-      header: [
-        { id: "videoId", title: "video_id" },
-        { id: "playlists", title: "playlist_ids" },
-        { id: "title", title: "title" },
-        { id: "description", title: "description" },
-      ],
+    const csvStream = stringify({
+      header: true,
+      columns: ["video_id", "playlist_ids", "title", "description"],
     });
 
-    const records = collection.iterator().map((video) => ({
-      videoId: video.videoId,
-      title: video.title,
-      playlists: video.playlists().join(":"),
-      description: video.description.replace(/\n/g, "\\n"),
-    }));
+    if (opts.stdout) {
+      csvStream.pipe(process.stdout);
+    } else {
+      const fileStream = createWriteStream(opts.output);
 
-    await csvWriter.writeRecords(records);
-    console.log(`CSV file saved as ${opts.output}`);
+      fileStream.on(
+        "finish",
+        () => console.log(`Youtube listing saved as ${opts.output}`),
+      );
+
+      csvStream.pipe(fileStream);
+    }
+
+    for (const video of collection.iterator()) {
+      csvStream.write({
+        video_id: video.videoId,
+        playlist_ids: video.playlists().join(":"),
+        title: video.title,
+        description: escapeNL(video.description),
+      });
+    }
+
+    csvStream.end();
   } catch (error) {
     console.error("Error occurred:", error);
   }
