@@ -2,7 +2,7 @@
 
 This is a small Node.js project that allows you to fetch data about the videos in your YouTube playlists and export the information to a CSV file.
 
-I created this project to have a reliable way to look through the videos I've added to my YouTube playlists. The setup process involves configuring a Google Cloud Project, enabling the YouTube Data API, and setting up OAuth 2.0 credentials. Kind of complicated, as Google APIs aren't particularly optimized for personal use cases, but hey, at least it works `¯\_(ツ)_/¯`.
+I created this project to have a reliable way to look through the videos I've added to my YouTube playlists. The setup process involves configuring a Google Cloud Project, enabling the YouTube Data API, and setting up OAuth 2.0 credentials. Kind of complicated, but Google APIs aren't particularly optimized for personal use cases, and hey, at least it works `¯\_(ツ)_/¯`.
 
 ## Installation
 
@@ -19,14 +19,14 @@ I created this project to have a reliable way to look through the videos I've ad
   - Create a new Project on Google Cloud Platform (https://console.developers.google.com/project)
   - Enable YouTube Data API (https://console.cloud.google.com/apis/library/youtube.googleapis.com)
   - Create OAuth 2.0 credentials (https://console.cloud.google.com/apis/credentials),
-    make sure to choose "TVs and Limited Input devices" as "Application type"
+    make sure to choose `TVs and Limited Input devices` as "Application type"
   - Create `./.env` file in the project's root directory and use the obtained ID and Secret
     ```shell
     MYTI_OAUTH_CLIENT_ID=<your-client-id>
     MYTI_OAUTH_CLIENT_SECRET=<your-client-secret>
 
     ```
-  - Add "https://www.googleapis.com/auth/youtube.readonly" to OAuth scopes (https://www.googleapis.com/auth/youtube.readonly)
+  - Add `https://www.googleapis.com/auth/youtube.readonly` to OAuth scopes (https://www.googleapis.com/auth/youtube.readonly)
   - Add yourself as a test user (https://console.cloud.google.com/apis/credentials/consent)
   - Run `npm start` to authorize the script in the browser and fetch sample data to make sure that everything's working
     (Note: This saves your access token locally in `./OAUTH.json`, so do this at your own risk)
