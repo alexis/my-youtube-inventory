@@ -1,12 +1,8 @@
 # My YouTube Inventory
 
-This Node.js project fetches and processes videos from your YouTube playlists and saves the data into a CSV file.
+This is a small Node.js project that allows you to fetch data about the videos in your YouTube playlists and export the information to a CSV file.
 
-## Prerequisites
-
-1. Node.js (v22+ recommended)
-2. A Google Cloud Project with YouTube Data API enabled
-3. OAuth 2.0 credentials for the project
+I created this project to have a reliable way to look through the videos I've added to my YouTube playlists. The setup process involves configuring a Google Cloud Project, enabling the YouTube Data API, and setting up OAuth 2.0 credentials. Kind of complicated, as Google APIs aren't particularly optimized for personal use cases, but hey, at least it works ¯\_(ツ)_/¯.
 
 ## Installation
 
@@ -20,7 +16,7 @@ This Node.js project fetches and processes videos from your YouTube playlists an
     npm install
     ```
 3. Get your Client ID and Client Secret from Google Cloud Project:
-  - Create a new Project on Google Cload Platform (https://console.developers.google.com/project)
+  - Create a new Project on Google Cloud Platform (https://console.developers.google.com/project)
   - Enable YouTube Data API (https://console.cloud.google.com/apis/library/youtube.googleapis.com)
   - Create OAuth 2.0 credentials (https://console.cloud.google.com/apis/credentials),
     make sure to choose "TVs and Limited Input devices" as "Application type"

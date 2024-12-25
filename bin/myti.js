@@ -5,6 +5,7 @@ import "dotenv/config";
 
 import { program } from "commander";
 import { createWriteStream, existsSync } from "fs";
+import { Console } from "console";
 import { stringify } from "csv-stringify";
 
 import Credentials from "#src/credentials.js";
@@ -13,7 +14,7 @@ import VideoCollection from "#src/video-collection.js";
 import { escapeNL } from "#src/utils.js";
 
 program
-  .option("-o, --output <file>", "output CSV file name", "youtube-listing.csv")
+  .option("-o, --output <file>", "output CSV file name", "myti.csv")
   .option("-m, --max <number>", "maximum number of items to fetch", 0)
   .option("--stdout", "output to stdout instead of a file")
   .option("--force", "overwrite existing output file")
@@ -26,6 +27,8 @@ const opts = program.opts();
     const auth = await Credentials.acquire();
     const collection = new VideoCollection();
     const youtube = new YouTube(auth);
+
+    console = new Console({ stdout: process.stderr, stderr: process.stderr });
 
     if (existsSync(opts.output) && !opts.force && !opts.stdout) {
       console.error(

@@ -1,9 +1,9 @@
 {
   "name": "my-youtube-inventory",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "main": "src/index.js",
   "bin": {
-    "myti-collect": "./bin/collect.js"
+    "myti": "./bin/myti.js"
   },
   "type": "module",
   "scripts": {
