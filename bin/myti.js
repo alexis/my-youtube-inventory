@@ -8,9 +8,9 @@ import { createWriteStream, existsSync } from "fs";
 import { Console } from "console";
 import { stringify } from "csv-stringify";
 
-import Credentials from "#src/credentials.js";
 import YouTube from "#src/youtube.js";
 import VideoCollection from "#src/video-collection.js";
+import { acquireAuth } from "#src/credentials.js";
 import { escapeNL } from "#src/utils.js";
 
 program
@@ -24,9 +24,9 @@ const opts = program.opts();
 
 (async () => {
   try {
-    const auth = await Credentials.acquire();
-    const collection = new VideoCollection();
+    const auth = await acquireAuth();
     const youtube = new YouTube(auth);
+    const collection = new VideoCollection();
 
     console = new Console({ stdout: process.stderr, stderr: process.stderr });
 

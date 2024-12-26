@@ -3,16 +3,16 @@
 import "./warning-workaround.js";
 import "dotenv/config";
 
-import Credentials from "./credentials.js";
+import { acquireAuth } from "./credentials.js";
 import YouTube from "./youtube.js";
 import VideoCollection from "./video-collection.js";
 
 const MAX_ITEMS = 5;
 
 (async () => {
-  const auth = await Credentials.acquire();
-  const collection = new VideoCollection();
+  const auth = await acquireAuth();
   const youtube = new YouTube(auth);
+  const collection = new VideoCollection();
 
   console.log(`Fetching ${MAX_ITEMS} items to make sure things are working:`);
   let processed_items = 0;
