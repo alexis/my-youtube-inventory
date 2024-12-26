@@ -2,7 +2,7 @@
 
 This is a small Node.js project that allows you to fetch data about the videos in your YouTube playlists and export the information to a CSV file.
 
-I created this project to have a reliable way to look through the videos I've added to my YouTube playlists. The setup process involves configuring a Google Cloud Project, enabling the YouTube Data API, and setting up OAuth 2.0 credentials. Kind of complicated, but Google APIs aren't particularly optimized for personal use cases, and hey, at least it works `¯\_(ツ)_/¯`.
+I created it to have a reliable way to look through the videos I've added to my YouTube playlists. The setup process involves configuring a Google Cloud Project, enabling the YouTube Data API, and setting up OAuth 2.0 credentials. Kind of complicated, but Google APIs aren't particularly optimized for personal use cases, and hey, at least it works `¯\_(ツ)_/¯`.
 
 ## Installation
 
@@ -28,8 +28,8 @@ I created this project to have a reliable way to look through the videos I've ad
     ```
   - Add `https://www.googleapis.com/auth/youtube.readonly` to OAuth scopes (https://www.googleapis.com/auth/youtube.readonly)
   - Add yourself as a test user (https://console.cloud.google.com/apis/credentials/consent)
-  - Run `npm start` to authorize the script in the browser and fetch sample data to make sure that everything's working
-    (Note: This saves your access token locally in `./OAUTH.json`, so do this at your own risk)
+  - Run `npm start` and follow instructions to authorize in your browser.
+    (Note: it will save your access token locally in `./OAUTH.json`, so do this at your own risk)
 
 ## Usage
 
@@ -38,4 +38,3 @@ Fetch your personal playlists and store the information in `myti.csv`:
 ```shell
 npx myti
 ```
-
