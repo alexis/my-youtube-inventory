@@ -3,7 +3,7 @@
 import "./warning-workaround.js";
 import "dotenv/config";
 
-import { acquireAuth } from "./credentials.js";
+import { acquireAuth } from "./acquire-auth.js";
 import YouTube from "./youtube.js";
 import VideoCollection from "./video-collection.js";
 

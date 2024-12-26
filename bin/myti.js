@@ -10,7 +10,7 @@ import { stringify } from "csv-stringify";
 
 import YouTube from "#src/youtube.js";
 import VideoCollection from "#src/video-collection.js";
-import { acquireAuth } from "#src/credentials.js";
+import { acquireAuth } from "#src/acquire-auth.js";
 import { escapeNL } from "#src/utils.js";
 
 program
