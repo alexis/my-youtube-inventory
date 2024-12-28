@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import "#src/warning-workaround.js";
+import "#root/warning-workaround.js";
 import "dotenv/config";
 
 import { program } from "commander";
@@ -8,10 +8,9 @@ import { createWriteStream, existsSync } from "fs";
 import { Console } from "console";
 import { stringify } from "csv-stringify";
 
-import YouTube from "#src/youtube.js";
-import VideoCollection from "#src/video-collection.js";
-import { acquireAuth } from "#src/acquire-auth.js";
-import { escapeNL } from "#src/utils.js";
+import YouTube from "#root/youtube.js";
+import VideoCollection from "#root/video-collection.js";
+import { acquireAuth } from "#root/acquire-auth.js";
 
 program
   .option("-o, --output <file>", "output CSV file name", "myti.csv")
@@ -84,7 +83,7 @@ const opts = program.opts();
         video_id: video.videoId,
         playlist_ids: video.playlists().join(":"),
         title: video.title,
-        description: escapeNL(video.description),
+        description: video.description.replace(/\n/g, "\\n"),
       });
     }
 

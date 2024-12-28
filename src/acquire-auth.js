@@ -1,5 +1,5 @@
 import OAuthYT from "./oauth-yt.js";
-import { fileExists, readJson, writeJson } from "./utils.js";
+import { existsSync, readJsonSync, writeJsonSync } from "./utils.js";
 
 const TOKEN_FILE = process.env.MYTI_TOKEN_FILE || "OAUTH.json";
 const CLIENT_ID = process.env.MYTI_OAUTH_CLIENT_ID;
@@ -27,8 +27,8 @@ class AuthAcquirer {
   }
 
   async loadSavedOAuthTokenData() {
-    if (await fileExists(this.tokenFile)) {
-      const savedTokenData = await readJson(this.tokenFile);
+    if (existsSync(this.tokenFile)) {
+      const savedTokenData = readJsonSync(this.tokenFile);
       if (!savedTokenData) return null;
       const refreshTokenData = await this.oauthYT.refreshAccessToken(
         savedTokenData.refresh_token,
@@ -42,7 +42,7 @@ class AuthAcquirer {
   async acquire() {
     const tokenData = await this.loadSavedOAuthTokenData() ||
       await this.authorizeOAuth();
-    writeJson(this.tokenFile, tokenData);
+    writeJsonSync(this.tokenFile, tokenData);
     return this.oauthYT.client(tokenData);
   }
 }
