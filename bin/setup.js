@@ -3,9 +3,7 @@
 import "./warning-workaround.js";
 import "dotenv/config";
 
-import { acquireAuth } from "./acquire-auth.js";
-import YouTube from "./youtube.js";
-import VideoCollection from "./video-collection.js";
+import { acquireAuth, YouTube, VideoCollection } from '#src/index.js';
 
 const MAX_ITEMS = 5;
 

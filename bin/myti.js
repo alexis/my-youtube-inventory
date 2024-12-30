@@ -1,22 +1,20 @@
 #!/usr/bin/env node
 
-import "#root/warning-workaround.js";
-import "dotenv/config";
+import './warning-workaround.js';
+import 'dotenv/config';
 
-import { program } from "commander";
-import { createWriteStream, existsSync } from "fs";
-import { Console } from "console";
-import { stringify } from "csv-stringify";
+import { program } from 'commander';
+import { createWriteStream, existsSync } from 'fs';
+import { Console } from 'console';
+import { stringify } from 'csv-stringify';
 
-import YouTube from "#root/youtube.js";
-import VideoCollection from "#root/video-collection.js";
-import { acquireAuth } from "#root/acquire-auth.js";
+import { acquireAuth, YouTube, VideoCollection } from '#src/index.js';
 
 program
-  .option("-o, --output <file>", "output CSV file name", "myti.csv")
-  .option("-m, --max <number>", "maximum number of items to fetch", 0)
-  .option("--stdout", "output to stdout instead of a file")
-  .option("--force", "overwrite existing output file")
+  .option('-o, --output <file>', 'output CSV file name', 'yt-invenory.csv')
+  .option('-m, --max <number>', 'maximum number of items to fetch', 0)
+  .option('--stdout', 'output to stdout instead of a file')
+  .option('--force', 'overwrite existing output file')
   .parse(process.argv);
 
 const opts = program.opts();
@@ -27,34 +25,30 @@ const opts = program.opts();
     const youtube = new YouTube(auth);
     const collection = new VideoCollection();
 
-    console = new Console({ stdout: process.stderr, stderr: process.stderr });
+    const console = new Console({ stdout: process.stderr, stderr: process.stderr });
 
     if (existsSync(opts.output) && !opts.force && !opts.stdout) {
-      console.error(
-        `File ${opts.output} already exists. Use --force to overwrite.`,
-      );
+      console.error(`File ${opts.output} already exists. Use --force to overwrite.`);
       process.exit(1);
     }
 
-    console.log(`Fetching ${opts.max || "all"} playlist items...`);
+    console.log(`Fetching ${opts.max || 'all'} playlist items...`);
 
     let processedItems = 0;
     const abortController = new AbortController();
 
-    youtube.on("playlist:item", (item) => {
+    youtube.on('playlist:item', item => {
       if (!opts.max || processedItems < opts.max) {
         collection.addItem(item);
         processedItems++;
-        if (processedItems % 50 == 0) {
-          console.log(`Fetched ${processedItems}...`);
-        }
+        if (processedItems % 50 == 0) console.log(`Fetched ${processedItems}...`);
       } else {
         abortController.abort();
       }
     });
 
-    youtube.on("playlists:start", () => console.time("Execution Time"));
-    youtube.on("playlists:complete", () => console.timeEnd("Execution Time"));
+    youtube.on('playlists:start', () => console.time('Execution Time'));
+    youtube.on('playlists:complete', () => console.timeEnd('Execution Time'));
 
     await youtube.processPlaylistItems(abortController.signal);
 
@@ -62,7 +56,7 @@ const opts = program.opts();
 
     const csvStream = stringify({
       header: true,
-      columns: ["video_id", "playlist_ids", "title", "description"],
+      columns: ['video_id', 'playlist_ids', 'title', 'description'],
     });
 
     if (opts.stdout) {
@@ -70,10 +64,7 @@ const opts = program.opts();
     } else {
       const fileStream = createWriteStream(opts.output);
 
-      fileStream.on(
-        "finish",
-        () => console.log(`Youtube listing saved as ${opts.output}`),
-      );
+      fileStream.on('finish', () => console.log(`Youtube listing saved as ${opts.output}`));
 
       csvStream.pipe(fileStream);
     }
@@ -81,14 +72,14 @@ const opts = program.opts();
     for (const video of collection.iterator()) {
       csvStream.write({
         video_id: video.videoId,
-        playlist_ids: video.playlists().join(":"),
+        playlist_ids: video.playlists().join(':'),
         title: video.title,
-        description: video.description.replace(/\n/g, "\\n"),
+        description: video.description.replace(/\n/g, '\\n'),
       });
     }
 
     csvStream.end();
   } catch (error) {
-    console.error("Error occurred:", error);
+    console.error('Error occurred:', error);
   }
 })();
