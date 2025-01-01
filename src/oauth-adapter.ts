@@ -3,6 +3,7 @@ import { sleep } from './utils.js';
 import assert from 'assert/strict';
 
 const DEVICE_CODE_URL = 'https://oauth2.googleapis.com/device/code';
+const AUTH_URL = 'https://accounts.google.com/o/oauth2/auth';
 const TOKEN_URL = 'https://www.youtube.com/o/oauth2/token';
 
 interface DeviceCodeData {
@@ -27,13 +28,18 @@ interface TokenErrorData {
 
 type TokenData = TokenSuccessData | TokenErrorData;
 
-class OAuthYT {
+class OAuthAdapter {
   constructor(
     private clientId: string,
     private clientSecret: string,
     private oauthScope: string = 'https://www.googleapis.com/auth/youtube.readonly',
   ) {}
 
+  // Can be used to implement the Device flow.
+  //
+  // Note that client id and client secret (this.clientId and this.clientSecret)
+  // must belong to OAuth 2.0 credentials with application type set to `TVs and Limited Input devices` on youtube
+  // (https://console.cloud.google.com/apis/credentials)
   async getDeviceCode(): Promise<DeviceCodeData> {
     const response = await fetch(DEVICE_CODE_URL, {
       method: 'POST',
@@ -54,6 +60,11 @@ class OAuthYT {
     return result;
   }
 
+  // Can be used to implement the Device flow.
+  //
+  // Note that client id and client secret (this.clientId and this.clientSecret)
+  // must belong to OAuth 2.0 credentials with application type set to `TVs and Limited Input devices` on youtube
+  // (https://console.cloud.google.com/apis/credentials)
   async waitAndGetTokenData(deviceCodeResponse: DeviceCodeData): Promise<TokenSuccessData> {
     while (true) {
       const response = await fetch(TOKEN_URL, {
@@ -83,26 +94,70 @@ class OAuthYT {
     }
   }
 
-  // Uses google-auth-library to achive an equivalent of:
-  // ```
-  //   const response = await fetch(TOKEN_URL, {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify({
-  //       client_id: this.clientId,
-  //       client_secret: this.clientSecret,
-  //       refresh_token: tokenData.refresh_token,
-  //       grant_type: 'refresh_token',
-  //     }),
-  //   });
-  //
-  //   return await response.json()
-  // ```
+  // Can be used with any OAuth flow.
   async refreshAccessToken(tokenData: TokenSuccessData): Promise<TokenSuccessData> {
     const client = this.client(tokenData);
+
+    // Use google-auth-library to achive an equivalent of:
+    // ```
+    //   const response = await fetch(TOKEN_URL, {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({
+    //       client_id: this.clientId,
+    //       client_secret: this.clientSecret,
+    //       refresh_token: tokenData.refresh_token,
+    //       grant_type: 'refresh_token',
+    //     }),
+    //   });
+    // ```
     const { credentials } = await client.refreshAccessToken();
 
     const result = { ...credentials, expires_in: credentials.expiry_date };
+    assert(this.isTokenSuccessResponse(result));
+
+    return result;
+  }
+
+  composeAuthUrl(redirectUri: string): string {
+    const params = new URLSearchParams({
+      client_id: this.clientId,
+      redirect_uri: redirectUri,
+      response_type: 'code',
+      scope: this.oauthScope,
+      access_type: 'offline',
+      prompt: 'consent',
+    });
+
+    return `${AUTH_URL}?${params.toString()}`;
+  }
+
+  // Can be used to implement the Authorization Code flow.
+  //
+  // Note that client id and client secret (this.clientId and this.clientSecret)
+  // must belong to OAuth 2.0 credentials with application type set to `Desktop app` on youtube
+  // (https://console.cloud.google.com/apis/credentials)
+  async exchangeAuthCodeForToken(authCode: string, redirectUri: string): Promise<TokenSuccessData> {
+    const oAuth2Client = new OAuth2Client(this.clientId, this.clientSecret, redirectUri);
+
+    // Use google-auth-library to achive an equivalent of:
+    // ```
+    // const response = await fetch(TOKEN_URL, {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify({
+    //     client_id: this.clientId,
+    //     client_secret: this.clientSecret,
+    //     code: authCode,
+    //     redirect_uri: redirectUri,
+    //     grant_type: 'authorization_code',
+    //   }),
+    // });
+    const { tokens } = await oAuth2Client.getToken(authCode);
+
+    oAuth2Client.setCredentials(tokens);
+
+    const result = { ...tokens, expires_in: tokens.expiry_date };
     assert(this.isTokenSuccessResponse(result));
 
     return result;
@@ -131,4 +186,4 @@ class OAuthYT {
   }
 }
 export { DeviceCodeData, TokenSuccessData, TokenErrorData, OAuth2Client };
-export default OAuthYT;
+export default OAuthAdapter;
