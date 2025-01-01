@@ -1,12 +1,13 @@
 {
   "name": "my-youtube-inventory",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "main": "./dist/src/index.js",
   "bin": {
     "myti": "./dist/bin/myti.js"
   },
   "type": "module",
   "scripts": {
+    "watch": "tsc --watch",
     "build": "tsc",
     "start": "tsc && node dist/bin/setup.js",
     "debug": "node --inspect-wait dist/bin/setup.js",

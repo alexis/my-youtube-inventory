@@ -1,10 +1,11 @@
 import { OAuth2Client } from 'google-auth-library';
 import { sleep } from './utils.js';
+import assert from 'assert/strict';
 
 const DEVICE_CODE_URL = 'https://oauth2.googleapis.com/device/code';
 const TOKEN_URL = 'https://www.youtube.com/o/oauth2/token';
 
-interface DeviceCodeResponse {
+interface DeviceCodeData {
   device_code: string;
   user_code: string;
   verification_url: string;
@@ -12,7 +13,7 @@ interface DeviceCodeResponse {
   interval: number;
 }
 
-interface TokenSuccessResponse {
+interface TokenSuccessData {
   access_token: string;
   refresh_token?: string;
   expires_in: number;
@@ -20,28 +21,20 @@ interface TokenSuccessResponse {
   token_type: string;
 }
 
-interface TokenErrorResponse {
+interface TokenErrorData {
   error: string;
 }
 
-type TokenResponse = TokenSuccessResponse | TokenErrorResponse;
+type TokenData = TokenSuccessData | TokenErrorData;
 
 class OAuthYT {
-  private clientId: string;
-  private clientSecret: string;
-  private oauthScope: string;
-
   constructor(
-    clientId: string,
-    clientSecret: string,
-    oauthScope: string = 'https://www.googleapis.com/auth/youtube.readonly',
-  ) {
-    this.clientId = clientId;
-    this.clientSecret = clientSecret;
-    this.oauthScope = oauthScope;
-  }
+    private clientId: string,
+    private clientSecret: string,
+    private oauthScope: string = 'https://www.googleapis.com/auth/youtube.readonly',
+  ) {}
 
-  async getDeviceCode(): Promise<DeviceCodeResponse> {
+  async getDeviceCode(): Promise<DeviceCodeData> {
     const response = await fetch(DEVICE_CODE_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -54,15 +47,14 @@ class OAuthYT {
     });
 
     if (!response.ok) throw new Error(`Error fetching device code: ${response.statusText}`);
-    const result = (await response.json()) as DeviceCodeResponse;
+    const result = (await response.json()) as DeviceCodeData;
 
-    if (!this.isDeviceCodeResponse(result))
-      throw new Error('Unexpected device code response format');
+    assert(this.isDeviceCodeData(result));
 
     return result;
   }
 
-  async waitAndGetTokenData(deviceCodeResponse: DeviceCodeResponse): Promise<TokenSuccessResponse> {
+  async waitAndGetTokenData(deviceCodeResponse: DeviceCodeData): Promise<TokenSuccessData> {
     while (true) {
       const response = await fetch(TOKEN_URL, {
         method: 'POST',
@@ -75,7 +67,7 @@ class OAuthYT {
         }),
       });
 
-      const result = (await response.json()) as TokenResponse;
+      const result = (await response.json()) as TokenData;
 
       if ('error' in result) {
         if (result.error !== 'authorization_pending')
@@ -85,39 +77,44 @@ class OAuthYT {
         continue;
       }
 
-      if (!this.isTokenSuccessResponse(response)) new Error('Unexpected token response format');
+      assert(this.isTokenSuccessResponse(result));
 
       return result;
     }
   }
 
-  async refreshAccessToken(refreshToken: string): Promise<TokenSuccessResponse> {
-    const response = await fetch(TOKEN_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        client_id: this.clientId,
-        client_secret: this.clientSecret,
-        refresh_token: refreshToken,
-        grant_type: 'refresh_token',
-      }),
-    });
+  // Uses google-auth-library to achive an equivalent of:
+  // ```
+  //   const response = await fetch(TOKEN_URL, {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify({
+  //       client_id: this.clientId,
+  //       client_secret: this.clientSecret,
+  //       refresh_token: tokenData.refresh_token,
+  //       grant_type: 'refresh_token',
+  //     }),
+  //   });
+  //
+  //   return await response.json()
+  // ```
+  async refreshAccessToken(tokenData: TokenSuccessData): Promise<TokenSuccessData> {
+    const client = this.client(tokenData);
+    const { credentials } = await client.refreshAccessToken();
 
-    const result = (await response.json()) as TokenResponse;
-
-    if ('error' in result) throw new Error(`Error refreshing token: ${result.error}`);
-    if (!this.isTokenSuccessResponse(response)) new Error('Unexpected token response format');
+    const result = { ...credentials, expires_in: credentials.expiry_date };
+    assert(this.isTokenSuccessResponse(result));
 
     return result;
   }
 
-  client(tokenData: TokenSuccessResponse) {
+  client(tokenData: TokenSuccessData) {
     const client = new OAuth2Client(this.clientId, this.clientSecret);
     client.setCredentials(tokenData);
     return client;
   }
 
-  private isTokenSuccessResponse(response: unknown): response is TokenSuccessResponse {
+  private isTokenSuccessResponse(response: unknown): response is TokenSuccessData {
     if (typeof response !== 'object' || response === null) return false;
 
     return ['access_token', 'expires_in', 'scope', 'token_type'].every(
@@ -125,7 +122,7 @@ class OAuthYT {
     );
   }
 
-  private isDeviceCodeResponse(response: unknown): response is DeviceCodeResponse {
+  private isDeviceCodeData(response: unknown): response is DeviceCodeData {
     if (typeof response !== 'object' || response === null) return false;
 
     return ['device_code', 'user_code', 'verification_url', 'expires_in', 'interval'].every(
@@ -133,5 +130,5 @@ class OAuthYT {
     );
   }
 }
-export { DeviceCodeResponse, TokenSuccessResponse, TokenErrorResponse, OAuth2Client };
+export { DeviceCodeData, TokenSuccessData, TokenErrorData, OAuth2Client };
 export default OAuthYT;

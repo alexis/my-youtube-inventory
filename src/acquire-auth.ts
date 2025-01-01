@@ -1,5 +1,5 @@
 import { existsSync } from 'fs';
-import OAuthYT, { TokenSuccessResponse, OAuth2Client } from './oauth-yt.js';
+import OAuthYT, { TokenSuccessData, OAuth2Client } from './oauth-yt.js';
 import { readJsonSync, writeJsonSync } from './utils.js';
 
 const TOKEN_FILE = process.env.MYTI_TOKEN_FILE || 'OAUTH.json';
@@ -7,7 +7,7 @@ const CLIENT_ID = process.env.MYTI_OAUTH_CLIENT_ID;
 const CLIENT_SECRET = process.env.MYTI_OAUTH_CLIENT_SECRET;
 const OAUTH_SCOPE = process.env.MYTI_OAUTH_SCOPE;
 
-interface SavedTokenData extends TokenSuccessResponse {
+interface SavedTokenData extends TokenSuccessData {
   refresh_token: string;
 }
 
@@ -24,20 +24,20 @@ class AuthAcquirer {
     this.tokenFile = TOKEN_FILE;
   }
 
-  async authorizeOAuth(): Promise<TokenSuccessResponse> {
+  async authorizeOAuth(): Promise<TokenSuccessData> {
     console.log('No existing token found. Starting OAuth Device Flow...');
-    const deviceCodeResponse = await this.oauthYT.getDeviceCode();
+    const deviceCodeData = await this.oauthYT.getDeviceCode();
 
-    console.log(`Visit this URL to authorize: ${deviceCodeResponse.verification_url}`);
-    console.log(`Enter the code: ${deviceCodeResponse.user_code}`);
-    return await this.oauthYT.waitAndGetTokenData(deviceCodeResponse);
+    console.log(`Visit this URL to authorize: ${deviceCodeData.verification_url}`);
+    console.log(`Enter the code: ${deviceCodeData.user_code}`);
+    return await this.oauthYT.waitAndGetTokenData(deviceCodeData);
   }
 
-  async loadSavedOAuthTokenData(): Promise<TokenSuccessResponse | null> {
+  async loadSavedOAuthTokenData(): Promise<TokenSuccessData | null> {
     if (existsSync(this.tokenFile)) {
-      const savedTokenData: SavedTokenData | null = readJsonSync(this.tokenFile);
+      const savedTokenData: SavedTokenData = readJsonSync(this.tokenFile);
       if (!savedTokenData) return null;
-      const refreshTokenData = await this.oauthYT.refreshAccessToken(savedTokenData.refresh_token);
+      const refreshTokenData = await this.oauthYT.refreshAccessToken(savedTokenData);
       return { ...refreshTokenData, ...savedTokenData };
     }
 
