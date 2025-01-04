@@ -1,6 +1,5 @@
-import { existsSync } from 'fs';
 import OAuthAdapter, { TokenSuccessData, OAuth2Client } from './oauth-adapter.js';
-import { readJsonSync, writeJsonSync } from './utils.js';
+import Configuration from './configuration.js';
 import http from 'http';
 import open from 'open';
 import { URL } from 'url';
@@ -12,13 +11,9 @@ const CLIENT_SECRET = process.env.MYTI_OAUTH_CLIENT_SECRET;
 const OAUTH_SCOPE = process.env.MYTI_OAUTH_SCOPE;
 const REDIRECT_URI = `http://localhost`;
 
-interface SavedTokenData extends TokenSuccessData {
-  refresh_token: string;
-}
-
 class AuthAcquirer {
   private oauth: OAuthAdapter;
-  private tokenFile: string;
+  private configuration: Configuration;
 
   constructor() {
     if (!CLIENT_ID || !CLIENT_SECRET) {
@@ -26,7 +21,7 @@ class AuthAcquirer {
     }
 
     this.oauth = new OAuthAdapter(CLIENT_ID, CLIENT_SECRET, OAUTH_SCOPE);
-    this.tokenFile = TOKEN_FILE;
+    this.configuration = new Configuration(TOKEN_FILE);
   }
 
   async authorizeOAuthDevice(): Promise<TokenSuccessData> {
@@ -86,9 +81,8 @@ class AuthAcquirer {
   }
 
   async loadSavedOAuthTokenData(): Promise<TokenSuccessData | null> {
-    if (existsSync(this.tokenFile)) {
-      const savedTokenData: SavedTokenData = readJsonSync(this.tokenFile);
-      if (!savedTokenData) return null;
+    if (this.configuration.tokensConfigured()) {
+      const savedTokenData = this.configuration.tokenData;
       const refreshTokenData = await this.oauth.refreshAccessToken(savedTokenData);
       return { ...refreshTokenData, ...savedTokenData };
     }
@@ -99,7 +93,7 @@ class AuthAcquirer {
   async acquire(): Promise<OAuth2Client> {
     const tokenData =
       (await this.loadSavedOAuthTokenData()) || (await this.authorizeOAuthDesktop());
-    writeJsonSync(this.tokenFile, tokenData);
+    this.configuration.writeTokenData(tokenData);
     return this.oauth.client(tokenData);
   }
 }

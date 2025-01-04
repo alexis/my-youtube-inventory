@@ -55,7 +55,7 @@ class OAuthAdapter {
     if (!response.ok) throw new Error(`Error fetching device code: ${response.statusText}`);
     const result = (await response.json()) as DeviceCodeData;
 
-    assert(this.isDeviceCodeData(result));
+    assert(isDeviceCodeData(result));
 
     return result;
   }
@@ -88,7 +88,7 @@ class OAuthAdapter {
         continue;
       }
 
-      assert(this.isTokenSuccessResponse(result));
+      assert(isTokenSuccessResponse(result));
 
       return result;
     }
@@ -114,7 +114,7 @@ class OAuthAdapter {
     const { credentials } = await client.refreshAccessToken();
 
     const result = { ...credentials, expires_in: credentials.expiry_date };
-    assert(this.isTokenSuccessResponse(result));
+    assert(isTokenSuccessResponse(result));
 
     return result;
   }
@@ -158,7 +158,7 @@ class OAuthAdapter {
     oAuth2Client.setCredentials(tokens);
 
     const result = { ...tokens, expires_in: tokens.expiry_date };
-    assert(this.isTokenSuccessResponse(result));
+    assert(isTokenSuccessResponse(result));
 
     return result;
   }
@@ -168,22 +168,22 @@ class OAuthAdapter {
     client.setCredentials(tokenData);
     return client;
   }
+}
 
-  private isTokenSuccessResponse(response: unknown): response is TokenSuccessData {
-    if (typeof response !== 'object' || response === null) return false;
+function isTokenSuccessResponse(response: unknown): response is TokenSuccessData {
+  if (typeof response !== 'object' || response === null) return false;
 
-    return ['access_token', 'expires_in', 'scope', 'token_type'].every(
-      property => property in response,
-    );
-  }
+  return ['access_token', 'expires_in', 'scope', 'token_type'].every(
+    property => property in response,
+  );
+}
 
-  private isDeviceCodeData(response: unknown): response is DeviceCodeData {
-    if (typeof response !== 'object' || response === null) return false;
+function isDeviceCodeData(response: unknown): response is DeviceCodeData {
+  if (typeof response !== 'object' || response === null) return false;
 
-    return ['device_code', 'user_code', 'verification_url', 'expires_in', 'interval'].every(
-      property => property in response,
-    );
-  }
+  return ['device_code', 'user_code', 'verification_url', 'expires_in', 'interval'].every(
+    property => property in response,
+  );
 }
 export { DeviceCodeData, TokenSuccessData, TokenErrorData, OAuth2Client };
 export default OAuthAdapter;
