@@ -54,31 +54,33 @@ const opts = program.opts();
 
     console.log(`\nExtracted ${collection.size()} videos`);
 
-    const csvStream = stringify({
+    const stringifier = stringify({
+      columns: ['video_id', 'playlist_ids', 'channel_title', 'title', 'description'],
       header: true,
-      columns: ['video_id', 'playlist_ids', 'title', 'description'],
+      delimiter: '\t',
     });
 
     if (opts.stdout) {
-      csvStream.pipe(process.stdout);
+      stringifier.pipe(process.stdout);
     } else {
       const fileStream = createWriteStream(opts.output);
 
       fileStream.on('finish', () => console.log(`Youtube listing saved as ${opts.output}`));
 
-      csvStream.pipe(fileStream);
+      stringifier.pipe(fileStream);
     }
 
     for (const video of collection.iterator()) {
-      csvStream.write({
+      stringifier.write({
         video_id: video.videoId,
         playlist_ids: video.playlists().join(':'),
         title: video.title,
+        channel_title: video.channelTitle,
         description: video.description.replace(/\n/g, '\\n'),
       });
     }
 
-    csvStream.end();
+    stringifier.end();
   } catch (error) {
     console.error('Error occurred:', error);
   }

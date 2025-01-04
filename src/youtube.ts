@@ -84,8 +84,8 @@ class YouTube extends EventEmitter {
   private wrapPlaylistItem({ snippet = {} }: PlayListItemFromResponse): PlaylistItem {
     const resourceId = snippet.resourceId;
 
-    assert(!!snippet.playlistId);
-    assert(!!resourceId?.videoId);
+    assert(snippet.playlistId);
+    assert(resourceId?.videoId);
 
     return new PlaylistItem(
       snippet.playlistId,
@@ -94,7 +94,7 @@ class YouTube extends EventEmitter {
       snippet.title ?? undefined,
       snippet.description ?? undefined,
       snippet.publishedAt ?? undefined,
-      snippet.videoOwnerChannelId ?? undefined,
+      snippet.videoOwnerChannelTitle ?? undefined,
       snippet.position ?? undefined,
     );
   }

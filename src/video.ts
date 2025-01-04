@@ -4,6 +4,7 @@ class Video {
     public title?: string,
     public description?: string,
     public playlistMemberships: { [K in string]: string | undefined } = {},
+    public channelTitle?: string,
   ) {}
 
   playlists(): string[] {

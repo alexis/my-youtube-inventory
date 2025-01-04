@@ -6,6 +6,7 @@ type VideoAttrs = {
   title: string | undefined;
   description: string | undefined;
   playlistMemberships: { [index: string]: string | undefined };
+  channelTitle: string | undefined;
 };
 
 class VideoCollection {
@@ -25,6 +26,7 @@ class VideoCollection {
       title: item.title,
       description: item.description,
       playlistMemberships: { [item.playlistId]: item.publishedAt },
+      channelTitle: item.channelTitle,
     };
   }
 
@@ -34,8 +36,8 @@ class VideoCollection {
 
   *iterator() {
     for (const video of Object.values(this.videos)) {
-      const { videoId, title, description, playlistMemberships } = video;
-      yield new Video(videoId, title, description, playlistMemberships);
+      const { videoId, title, description, playlistMemberships, channelTitle } = video;
+      yield new Video(videoId, title, description, playlistMemberships, channelTitle);
     }
   }
 }
