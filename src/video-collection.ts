@@ -3,10 +3,10 @@ import Video from './video.js';
 
 type VideoAttrs = {
   videoId: string;
-  title: string | undefined;
-  description: string | undefined;
+  title?: string;
+  description?: string;
   playlistMemberships: { [index: string]: string | undefined };
-  channelTitle: string | undefined;
+  channelTitle?: string;
 };
 
 class VideoCollection {
