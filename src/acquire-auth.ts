@@ -1,27 +1,27 @@
 import OAuthAdapter, { TokenSuccessData, OAuth2Client } from './oauth-adapter.js';
-import Configuration from './configuration.js';
+import PersistedTokens from './persisted-tokens.js';
 import http from 'http';
 import open from 'open';
 import { URL } from 'url';
 import { AddressInfo } from 'net';
 
-const TOKEN_FILE = process.env.MYTI_TOKEN_FILE || 'OAUTH.json';
 const CLIENT_ID = process.env.MYTI_OAUTH_CLIENT_ID;
 const CLIENT_SECRET = process.env.MYTI_OAUTH_CLIENT_SECRET;
-const OAUTH_SCOPE = process.env.MYTI_OAUTH_SCOPE;
+const TOKEN_FILE = process.env.MYTI_TOKEN_FILE || 'OAUTH.json';
+
 const REDIRECT_URI = `http://localhost`;
 
 class AuthAcquirer {
   private oauth: OAuthAdapter;
-  private configuration: Configuration;
+  private configuration: PersistedTokens;
 
   constructor() {
     if (!CLIENT_ID || !CLIENT_SECRET) {
       throw new Error('You need to set up OAuth');
     }
 
-    this.oauth = new OAuthAdapter(CLIENT_ID, CLIENT_SECRET, OAUTH_SCOPE);
-    this.configuration = new Configuration(TOKEN_FILE);
+    this.oauth = new OAuthAdapter(CLIENT_ID, CLIENT_SECRET);
+    this.configuration = new PersistedTokens(TOKEN_FILE);
   }
 
   async authorizeOAuthDevice(): Promise<TokenSuccessData> {

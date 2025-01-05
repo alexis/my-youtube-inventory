@@ -11,7 +11,7 @@ import { stringify } from 'csv-stringify';
 import { acquireAuth, YouTube, VideoCollection } from '#src/index.js';
 
 program
-  .option('-o, --output <file>', 'output CSV file name', 'yt-invenory.csv')
+  .option('-o, --output <file>', 'output CSV file name', 'yt-inventory.csv')
   .option('-m, --max <number>', 'maximum number of items to fetch', 0)
   .option('--stdout', 'output to stdout instead of a file')
   .option('--force', 'overwrite existing output file')

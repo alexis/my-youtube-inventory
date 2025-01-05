@@ -5,6 +5,7 @@ import assert from 'assert/strict';
 const DEVICE_CODE_URL = 'https://oauth2.googleapis.com/device/code';
 const AUTH_URL = 'https://accounts.google.com/o/oauth2/auth';
 const TOKEN_URL = 'https://www.youtube.com/o/oauth2/token';
+const OAUTH_SCOPE = 'https://www.googleapis.com/auth/youtube.readonly';
 
 interface DeviceCodeData {
   device_code: string;
@@ -32,7 +33,6 @@ class OAuthAdapter {
   constructor(
     private clientId: string,
     private clientSecret: string,
-    private oauthScope: string = 'https://www.googleapis.com/auth/youtube.readonly',
   ) {}
 
   // Can be used to implement the Device flow.
@@ -46,7 +46,7 @@ class OAuthAdapter {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         client_id: this.clientId,
-        scope: this.oauthScope,
+        scope: OAUTH_SCOPE,
         device_id: crypto.randomUUID(),
         device_model: 'MYTI',
       }),
@@ -88,7 +88,7 @@ class OAuthAdapter {
         continue;
       }
 
-      assert(isTokenSuccessResponse(result));
+      assert(isSuccessTokenData(result));
 
       return result;
     }
@@ -114,7 +114,7 @@ class OAuthAdapter {
     const { credentials } = await client.refreshAccessToken();
 
     const result = { ...credentials, expires_in: credentials.expiry_date };
-    assert(isTokenSuccessResponse(result));
+    assert(isSuccessTokenData(result));
 
     return result;
   }
@@ -124,7 +124,7 @@ class OAuthAdapter {
       client_id: this.clientId,
       redirect_uri: redirectUri,
       response_type: 'code',
-      scope: this.oauthScope,
+      scope: OAUTH_SCOPE,
       access_type: 'offline',
       prompt: 'consent',
     });
@@ -158,7 +158,7 @@ class OAuthAdapter {
     oAuth2Client.setCredentials(tokens);
 
     const result = { ...tokens, expires_in: tokens.expiry_date };
-    assert(isTokenSuccessResponse(result));
+    assert(isSuccessTokenData(result));
 
     return result;
   }
@@ -170,7 +170,7 @@ class OAuthAdapter {
   }
 }
 
-function isTokenSuccessResponse(response: unknown): response is TokenSuccessData {
+function isSuccessTokenData(response: unknown): response is TokenSuccessData {
   if (typeof response !== 'object' || response === null) return false;
 
   return ['access_token', 'expires_in', 'scope', 'token_type'].every(

@@ -7,7 +7,7 @@ interface TokensFullData extends TokenSuccessData {
   refresh_token: string;
 }
 
-class Configuration {
+class PersistedTokens {
   public tokenData?: TokensFullData;
 
   constructor(private tokenFile: string) {
@@ -28,10 +28,6 @@ class Configuration {
     this.tokenData = tokenData;
     writeJsonSync(this.tokenFile, tokenData);
   }
-
-  //playlistsRegistry() {}
-
-  //generatePlaylistsRegistry(playlists) {}
 }
 
 function isTokensFullData(response: unknown): response is TokensFullData {
@@ -47,5 +43,5 @@ function isTokensFullData(response: unknown): response is TokensFullData {
   return keys.every(property => property in response);
 }
 
-export default Configuration;
+export default PersistedTokens;
 export { TokensFullData as SavedTokenData };
