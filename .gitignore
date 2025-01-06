@@ -11,8 +11,8 @@ node_modules
 *~
 .#*
 /TAGS
-docker-compose.override.yml
 
 OAUTH.json
+categories.json
 /dist
 /package-lock.json

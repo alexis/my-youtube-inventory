@@ -5,6 +5,8 @@ import PlaylistItem from './playlist-item.js';
 import Playlist from './playlist.js';
 import { GaxiosResponse } from 'gaxios';
 import assert from 'assert';
+import CategoriesRegistry from './categories-registry.js';
+import { OAuth2Client } from 'google-auth-library';
 
 type PlaylistFromResponse = youtube_v3.Schema$Playlist;
 type PlayListItemListResponse = GaxiosResponse<youtube_v3.Schema$PlaylistItemListResponse>;
@@ -14,7 +16,7 @@ class YouTube extends EventEmitter {
   private youtubeClient: youtube_v3.Youtube;
   private limit: ReturnType<typeof pLimit>;
 
-  constructor(auth: string) {
+  constructor(auth: OAuth2Client) {
     super();
 
     this.youtubeClient = youtube({ version: 'v3', auth });
@@ -28,9 +30,9 @@ class YouTube extends EventEmitter {
       maxResults: 50,
     });
 
-    const items = response.data.items;
+    const playlists = response.data.items?.filter(x => !!x.id).map(x => this.wrapPlaylist(x)) ?? [];
 
-    return items?.filter(x => !!x.id).map(x => this.wrapPlaylist(x)) ?? [];
+    return playlists;
   }
 
   async processPlaylistItemsFor(playlistId: string, signal?: AbortSignal): Promise<void> {
@@ -68,14 +70,21 @@ class YouTube extends EventEmitter {
     this.emit('playlist:complete', playlistId);
   }
 
-  async processPlaylistItems(sig: AbortSignal): Promise<void> {
+  async processPlaylistItems(
+    categories: CategoriesRegistry = new CategoriesRegistry(),
+    sig: AbortSignal,
+  ): Promise<void> {
     this.emit('playlists:start');
 
     const playlists = await this.fetchPlaylists();
+    categories.addPlaylistsAsNewCategories(playlists);
+
     await Promise.all(
-      playlists.map(p =>
-        this.limit(() => (sig.aborted ? undefined : this.processPlaylistItemsFor(p.id, sig))),
-      ),
+      categories
+        .syncablePlaylistIds()
+        .map(id =>
+          this.limit(() => (sig.aborted ? undefined : this.processPlaylistItemsFor(id, sig))),
+        ),
     );
 
     this.emit('playlists:complete');

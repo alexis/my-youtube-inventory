@@ -7,7 +7,7 @@ class Video {
     public channelTitle?: string,
   ) {}
 
-  playlists(): string[] {
+  playlistIds(): string[] {
     return Object.keys(this.playlistMemberships);
   }
 }

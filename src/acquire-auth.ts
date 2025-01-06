@@ -13,7 +13,7 @@ const REDIRECT_URI = `http://localhost`;
 
 class AuthAcquirer {
   private oauth: OAuthAdapter;
-  private configuration: PersistedTokens;
+  private persistedTokens: PersistedTokens;
 
   constructor() {
     if (!CLIENT_ID || !CLIENT_SECRET) {
@@ -21,7 +21,7 @@ class AuthAcquirer {
     }
 
     this.oauth = new OAuthAdapter(CLIENT_ID, CLIENT_SECRET);
-    this.configuration = new PersistedTokens(TOKEN_FILE);
+    this.persistedTokens = new PersistedTokens(TOKEN_FILE);
   }
 
   async authorizeOAuthDevice(): Promise<TokenSuccessData> {
@@ -81,8 +81,8 @@ class AuthAcquirer {
   }
 
   async loadSavedOAuthTokenData(): Promise<TokenSuccessData | null> {
-    if (this.configuration.tokensConfigured()) {
-      const savedTokenData = this.configuration.tokenData;
+    if (this.persistedTokens.exist()) {
+      const savedTokenData = this.persistedTokens.tokenData;
       const refreshTokenData = await this.oauth.refreshAccessToken(savedTokenData);
       return { ...refreshTokenData, ...savedTokenData };
     }
@@ -93,7 +93,7 @@ class AuthAcquirer {
   async acquire(): Promise<OAuth2Client> {
     const tokenData =
       (await this.loadSavedOAuthTokenData()) || (await this.authorizeOAuthDesktop());
-    this.configuration.writeTokenData(tokenData);
+    this.persistedTokens.writeTokenData(tokenData);
     return this.oauth.client(tokenData);
   }
 }
