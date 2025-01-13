@@ -6,8 +6,24 @@ import assert from 'assert';
 import CategoriesRegistry from './categories-registry.js';
 import { OAuth2Client } from 'google-auth-library';
 
+interface Playlist {
+  id: string;
+  title?: string;
+  itemCount?: number;
+}
+
+interface PlaylistItem {
+  playlistId: string;
+  videoId: string;
+  kind?: string;
+  title?: string;
+  description?: string;
+  publishedAt?: string;
+  channelTitle?: string;
+  position?: number;
+}
+
 type PlaylistFromResponse = youtube_v3.Schema$Playlist;
-type PlayListItemListResponse = GaxiosResponse<youtube_v3.Schema$PlaylistItemListResponse>;
 type PlayListItemFromResponse = youtube_v3.Schema$PlaylistItem;
 
 class YouTube extends EventEmitter {
@@ -46,12 +62,13 @@ class YouTube extends EventEmitter {
 
       this.emit('playlist:page:start', playlistId);
 
-      const response: PlayListItemListResponse = await this.youtubeClient.playlistItems.list({
-        part: ['snippet'],
-        playlistId,
-        maxResults: 50,
-        pageToken: nextPageToken,
-      });
+      const response: GaxiosResponse<youtube_v3.Schema$PlaylistItemListResponse> =
+        await this.youtubeClient.playlistItems.list({
+          part: ['snippet'],
+          playlistId,
+          maxResults: 50,
+          pageToken: nextPageToken,
+        });
 
       if (response.data.items) {
         for (const item of response.data.items) {
@@ -89,21 +106,21 @@ class YouTube extends EventEmitter {
   }
 
   private wrapPlaylistItem({ snippet = {} }: PlayListItemFromResponse): PlaylistItem {
-    const resourceId = snippet.resourceId;
+    const { resourceId = {} } = snippet;
 
     assert(snippet.playlistId);
-    assert(resourceId?.videoId);
+    assert(resourceId.videoId);
 
-    return new PlaylistItem(
-      snippet.playlistId,
-      resourceId.videoId,
-      resourceId.kind ?? undefined,
-      snippet.title ?? undefined,
-      snippet.description ?? undefined,
-      snippet.publishedAt ?? undefined,
-      snippet.videoOwnerChannelTitle ?? undefined,
-      snippet.position ?? undefined,
-    );
+    return {
+      playlistId: snippet.playlistId,
+      videoId: resourceId.videoId,
+      kind: resourceId.kind ?? undefined,
+      title: snippet.title ?? undefined,
+      description: snippet.description ?? undefined,
+      publishedAt: snippet.publishedAt ?? undefined,
+      channelTitle: snippet.videoOwnerChannelTitle ?? undefined,
+      position: snippet.position ?? undefined,
+    };
   }
 
   private wrapPlaylist(playlist: PlaylistFromResponse): Playlist {
@@ -111,31 +128,10 @@ class YouTube extends EventEmitter {
     const title = playlist.snippet?.title ?? undefined;
     const itemCount = playlist.contentDetails?.itemCount ?? undefined;
 
-    assert(!!id);
+    assert(id);
 
-    return new Playlist(id, title, itemCount);
+    return { id, title, itemCount };
   }
-}
-
-class Playlist {
-  constructor(
-    public id: string,
-    public title?: string,
-    public itemCount?: number,
-  ) {}
-}
-
-class PlaylistItem {
-  constructor(
-    public playlistId: string,
-    public videoId: string,
-    public kind?: string,
-    public title?: string,
-    public description?: string,
-    public publishedAt?: string,
-    public channelTitle?: string,
-    public position?: number,
-  ) {}
 }
 
 export { Playlist, PlaylistItem };
