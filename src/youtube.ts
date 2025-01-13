@@ -1,8 +1,6 @@
 import { youtube_v3, youtube } from '@googleapis/youtube';
 import pLimit from 'p-limit';
 import { EventEmitter } from 'events';
-import PlaylistItem from './playlist-item.js';
-import Playlist from './playlist.js';
 import { GaxiosResponse } from 'gaxios';
 import assert from 'assert';
 import CategoriesRegistry from './categories-registry.js';
@@ -119,4 +117,26 @@ class YouTube extends EventEmitter {
   }
 }
 
+class Playlist {
+  constructor(
+    public id: string,
+    public title?: string,
+    public itemCount?: number,
+  ) {}
+}
+
+class PlaylistItem {
+  constructor(
+    public playlistId: string,
+    public videoId: string,
+    public kind?: string,
+    public title?: string,
+    public description?: string,
+    public publishedAt?: string,
+    public channelTitle?: string,
+    public position?: number,
+  ) {}
+}
+
+export { Playlist, PlaylistItem };
 export default YouTube;

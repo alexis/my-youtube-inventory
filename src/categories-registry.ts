@@ -1,5 +1,5 @@
 import { readJsonSync } from './utils.js';
-import Playlist from './playlist.js';
+import { Playlist } from './youtube.js';
 import assert from 'assert';
 import { existsSync } from 'fs';
 

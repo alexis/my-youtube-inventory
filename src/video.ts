@@ -1,3 +1,46 @@
+import { PlaylistItem } from './youtube.js';
+
+type VideoAttrs = {
+  videoId: string;
+  title?: string;
+  description?: string;
+  playlistMemberships: { [index: string]: string | undefined };
+  channelTitle?: string;
+};
+
+class VideoCollection {
+  constructor(public videos: { [index: string]: VideoAttrs } = {}) {}
+
+  addItem(item: PlaylistItem) {
+    if (!this.videos[item.videoId]) {
+      this.videos[item.videoId] = this.videoAttrs(item);
+    } else {
+      this.videos[item.videoId].playlistMemberships[item.playlistId] = item.publishedAt;
+    }
+  }
+
+  videoAttrs(item: PlaylistItem): VideoAttrs {
+    return {
+      videoId: item.videoId,
+      title: item.title,
+      description: item.description,
+      playlistMemberships: { [item.playlistId]: item.publishedAt },
+      channelTitle: item.channelTitle,
+    };
+  }
+
+  size() {
+    return Object.keys(this.videos).length;
+  }
+
+  *iterator() {
+    for (const video of Object.values(this.videos)) {
+      const { videoId, title, description, playlistMemberships, channelTitle } = video;
+      yield new Video(videoId, title, description, playlistMemberships, channelTitle);
+    }
+  }
+}
+
 class Video {
   constructor(
     public videoId: string,
@@ -12,4 +55,4 @@ class Video {
   }
 }
 
-export default Video;
+export { VideoCollection, Video };
