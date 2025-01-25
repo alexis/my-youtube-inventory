@@ -1,5 +1,4 @@
-import { existsSync } from 'fs';
-import { readJsonSync, writeJsonSync } from './utils.js';
+import { readJsonSync, writeJsonSync, existsSync } from './utils.js';
 import { TokenSuccessData } from './oauth-adapter.js';
 import assert from 'assert';
 

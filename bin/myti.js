@@ -1,24 +1,24 @@
 #!/usr/bin/env node
 
 import './warning-workaround.js';
-import 'dotenv/config';
 
 import { program } from 'commander';
-import { createWriteStream, existsSync, writeFileSync } from 'fs';
+import { createWriteStream, existsSync, writeFileSync, mkdirSync } from 'fs';
 import { Console } from 'console';
 import { stringify } from 'csv-stringify';
 
 import { acquireAuth, YouTube, VideoCollection } from '#src/index.js';
 import CategoriesRegistry from '#src/categories-registry.js';
+import Configuration from '#src/configuration.js';
 
-const CATEGORIES_FILE = process.env.MYTI_CATEGORIES_FILE || 'categories.json';
+const configuration = new Configuration();
 
 program
   .option('-o, --output <file>', 'output CSV file name', 'yt-inventory.csv')
   .option('-m, --max <number>', 'maximum number of items to fetch', parseInt, 0)
   .option(
     '--dump-categories [file]',
-    `fetch playlists and dump them as categories (default: "${CATEGORIES_FILE}")`,
+    `fetch playlists and dump them as categories (default: "${configuration.categories.file}")`,
   )
   .option('--stdout', 'output to stdout instead of a file')
   .option('--force', 'overwrite existing output file')
@@ -28,12 +28,12 @@ const opts = program.opts();
 
 (async () => {
   try {
-    const auth = await acquireAuth();
+    const auth = await acquireAuth(configuration.auth);
     const youtube = new YouTube(auth);
     const categories = new CategoriesRegistry();
     const collection = new VideoCollection();
 
-    categories.tryAddCategoriesFromFile(CATEGORIES_FILE);
+    categories.tryAddCategoriesFromFile(configuration.categories.file);
 
     const console = new Console({ stdout: process.stderr, stderr: process.stderr });
 
@@ -46,7 +46,9 @@ const opts = program.opts();
       if (opts.stdout) {
         console.log(categoriesJSON);
       } else {
-        const file = opts.dumpCategories === true ? CATEGORIES_FILE : opts.dumpCategories;
+        let file = opts.dumpCategories;
+        if (file === true) file = configuration.categories.file;
+
         if (existsSync(file) && !opts.force) {
           console.error(`File ${file} already exists. Use --force to overwrite.`);
           process.exit(1);

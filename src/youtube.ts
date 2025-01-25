@@ -1,7 +1,6 @@
 import { youtube_v3, youtube } from '@googleapis/youtube';
 import pLimit from 'p-limit';
 import { EventEmitter } from 'events';
-import { GaxiosResponse } from 'gaxios';
 import assert from 'assert';
 import CategoriesRegistry from './categories-registry.js';
 import { OAuth2Client } from 'google-auth-library';
@@ -50,7 +49,7 @@ class YouTube extends EventEmitter {
   }
 
   async processPlaylistItemsFor(playlistId: string, signal?: AbortSignal): Promise<void> {
-    let nextPageToken: string | null | undefined = undefined;
+    let nextPageToken: string | undefined;
 
     this.emit('playlist:start', playlistId);
 
@@ -62,13 +61,12 @@ class YouTube extends EventEmitter {
 
       this.emit('playlist:page:start', playlistId);
 
-      const response: GaxiosResponse<youtube_v3.Schema$PlaylistItemListResponse> =
-        await this.youtubeClient.playlistItems.list({
-          part: ['snippet'],
-          playlistId,
-          maxResults: 50,
-          pageToken: nextPageToken,
-        });
+      const response = await this.youtubeClient.playlistItems.list({
+        part: ['snippet'],
+        playlistId,
+        maxResults: 50,
+        pageToken: nextPageToken,
+      });
 
       if (response.data.items) {
         for (const item of response.data.items) {
@@ -79,15 +77,15 @@ class YouTube extends EventEmitter {
         }
       }
 
-      nextPageToken = response.data.nextPageToken;
+      nextPageToken = response.data.nextPageToken ?? undefined;
     } while (nextPageToken);
 
     this.emit('playlist:complete', playlistId);
   }
 
   async processPlaylistItems(
-    categories: CategoriesRegistry = new CategoriesRegistry(),
-    sig: AbortSignal,
+    categories = new CategoriesRegistry(),
+    sig?: AbortSignal,
   ): Promise<void> {
     this.emit('playlists:start');
 
@@ -98,7 +96,9 @@ class YouTube extends EventEmitter {
       categories
         .syncablePlaylistIds()
         .map(id =>
-          this.limit(() => (sig.aborted ? undefined : this.processPlaylistItemsFor(id, sig))),
+          this.limit(() =>
+            sig && sig.aborted ? undefined : this.processPlaylistItemsFor(id, sig),
+          ),
         ),
     );
 

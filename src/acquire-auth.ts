@@ -4,24 +4,19 @@ import http from 'http';
 import open from 'open';
 import { URL } from 'url';
 import { AddressInfo } from 'net';
-
-const CLIENT_ID = process.env.MYTI_OAUTH_CLIENT_ID;
-const CLIENT_SECRET = process.env.MYTI_OAUTH_CLIENT_SECRET;
-const TOKEN_FILE = process.env.MYTI_TOKEN_FILE || 'OAUTH.json';
+import { AuthConfiguration } from './configuration.js';
 
 const REDIRECT_URI = `http://localhost`;
 
 class AuthAcquirer {
+  private config: AuthConfiguration;
   private oauth: OAuthAdapter;
   private persistedTokens: PersistedTokens;
 
-  constructor() {
-    if (!CLIENT_ID || !CLIENT_SECRET) {
-      throw new Error('You need to set up OAuth');
-    }
-
-    this.oauth = new OAuthAdapter(CLIENT_ID, CLIENT_SECRET);
-    this.persistedTokens = new PersistedTokens(TOKEN_FILE);
+  constructor(config: AuthConfiguration) {
+    this.config = config;
+    this.oauth = new OAuthAdapter(config.clientId, config.clientSecret);
+    this.persistedTokens = new PersistedTokens(config.tokenFile);
   }
 
   async authorizeOAuthDevice(): Promise<TokenSuccessData> {
@@ -98,4 +93,6 @@ class AuthAcquirer {
   }
 }
 
-export const acquireAuth = async (): Promise<OAuth2Client> => new AuthAcquirer().acquire();
+export const acquireAuth = async (config: AuthConfiguration): Promise<OAuth2Client> => {
+  return new AuthAcquirer(config).acquire();
+};

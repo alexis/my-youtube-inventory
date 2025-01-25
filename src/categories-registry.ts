@@ -1,7 +1,6 @@
-import { readJsonSync } from './utils.js';
+import { readJsonSync, existsSync } from './utils.js';
 import { Playlist } from './youtube.js';
 import assert from 'assert';
-import { existsSync } from 'fs';
 
 interface Category {
   id: string;

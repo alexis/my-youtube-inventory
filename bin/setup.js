@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 
 import './warning-workaround.js';
-import 'dotenv/config';
 
 import { acquireAuth, YouTube, VideoCollection } from '#src/index.js';
+import Configuration from '#src/configuration.js';
 
 const MAX_ITEMS = 5;
 
 (async () => {
-  const auth = await acquireAuth();
+  const configuration = new Configuration();
+  const auth = await acquireAuth(configuration.auth);
   const youtube = new YouTube(auth);
   const collection = new VideoCollection();
 

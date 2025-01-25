@@ -1,5 +1,8 @@
 import fs from 'fs';
 
+export { existsSync } from 'fs';
+export { xdgState, xdgConfig } from 'xdg-basedir';
+
 export const sleep = async (ms: number): Promise<void> =>
   new Promise(resolve => setTimeout(resolve, ms));
 
