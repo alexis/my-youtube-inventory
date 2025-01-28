@@ -1,5 +1,5 @@
 //import { jest } from '@jest/globals';
-import { vi } from 'vitest';
+import { vi, describe, test, beforeEach, afterAll, expect } from 'vitest';
 import { createHash } from 'crypto';
 import Configuration from '#src/configuration.js';
 import { writeJsonSync } from '#src/utils.js';

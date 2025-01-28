@@ -1,6 +1,6 @@
 {
   "name": "my-youtube-inventory",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "main": "./dist/src/index.js",
   "bin": {
     "myti": "./dist/bin/myti.js"
@@ -8,7 +8,7 @@
   "type": "module",
   "scripts": {
     "start": "tsc && node dist/bin/setup.js && read -p 'watch? [Enter/Ctrl-C]' -t 5 && tsc --watch",
-    "test": "vitest --globals",
+    "test": "vitest",
     "//test": "NODE_OPTIONS='--experimental-vm-modules' jest",
     "////test": "# see https://stackoverflow.com/questions/74069138/node-js-experimental-vm-modules-command-line-option-vs-type-module-in-pac",
     "debug": "node --inspect-wait dist/bin/setup.js"

@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi, describe, test, beforeEach, beforeAll, afterEach, expect } from 'vitest';
 import AuthAcquirer from '../src/auth-acquirer.js';
 import net from 'net';
 import gaxios from 'gaxios';
