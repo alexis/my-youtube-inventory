@@ -16,7 +16,7 @@ class PersistedTokens {
     }
   }
 
-  exist(): this is { tokenData: TokensFullData } {
+  exists(): this is { tokenData: TokensFullData } {
     if (!this.tokenData) return false;
 
     return true;

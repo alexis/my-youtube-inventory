@@ -2,8 +2,7 @@
 
 import './warning-workaround.js';
 
-import { acquireAuth, YouTube, VideoCollection } from '#src/index.js';
-import Configuration from '#src/configuration.js';
+import { acquireAuth, YouTube, VideoCollection, Configuration } from '#src/index.js';
 
 const MAX_ITEMS = 5;
 

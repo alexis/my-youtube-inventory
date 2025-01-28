@@ -163,7 +163,7 @@ class OAuthAdapter {
     return result;
   }
 
-  client(tokenData: TokenSuccessData) {
+  client(tokenData: TokenSuccessData): OAuth2Client {
     const client = new OAuth2Client(this.clientId, this.clientSecret);
     client.setCredentials(tokenData);
     return client;

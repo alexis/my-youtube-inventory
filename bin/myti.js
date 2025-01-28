@@ -3,13 +3,17 @@
 import './warning-workaround.js';
 
 import { program } from 'commander';
-import { createWriteStream, existsSync, writeFileSync, mkdirSync } from 'fs';
+import { createWriteStream, existsSync, writeFileSync } from 'fs';
 import { Console } from 'console';
 import { stringify } from 'csv-stringify';
 
-import { acquireAuth, YouTube, VideoCollection } from '#src/index.js';
-import CategoriesRegistry from '#src/categories-registry.js';
-import Configuration from '#src/configuration.js';
+import {
+  acquireAuth,
+  YouTube,
+  VideoCollection,
+  CategoriesRegistry,
+  Configuration,
+} from '#src/index.js';
 
 const configuration = new Configuration();
 
