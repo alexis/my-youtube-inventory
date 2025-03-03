@@ -114,6 +114,7 @@ class OAuthAdapter {
     const { credentials } = await client.refreshAccessToken();
 
     const result = { ...credentials, expires_in: credentials.expiry_date };
+    delete result.expiry_date;
     assert(isSuccessTokenData(result));
 
     return result;
@@ -158,6 +159,7 @@ class OAuthAdapter {
     oAuth2Client.setCredentials(tokens);
 
     const result = { ...tokens, expires_in: tokens.expiry_date };
+    delete result.expiry_date;
     assert(isSuccessTokenData(result));
 
     return result;
