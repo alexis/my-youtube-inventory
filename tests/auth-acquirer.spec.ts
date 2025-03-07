@@ -14,7 +14,7 @@ const createMocks = () => {
     composeAuthUrl: vi.fn().mockReturnValue('http://localhost:3000/auth'),
     exchangeAuthCodeForToken: vi.fn().mockResolvedValue(requestedTokenData),
     refreshAccessToken: vi.fn().mockResolvedValue({ access_token: 'new_mock_access_token' }),
-    client: vi.fn().mockReturnValue({}),
+    oauthClient: vi.fn().mockReturnValue({}),
   };
 
   const persistedTokensMock = {
@@ -51,11 +51,11 @@ describe('AuthAcquirer', () => {
   function testAcquireFromSavedToken() {
     test('acquire should return an auth object built from saved token if available', async () => {
       const mockAuth = { authentication: 'mock' };
-      oauthMock.client.mockReturnValue(mockAuth);
+      oauthMock.oauthClient.mockReturnValue(mockAuth);
       persistedTokensMock.exists.mockReturnValue(true);
       const auth = await authAcquirer.acquire();
 
-      expect(oauthMock.client).toHaveBeenCalledWith(persistedTokenData);
+      expect(oauthMock.oauthClient).toHaveBeenCalledWith(persistedTokenData);
       expect(auth).toBe(mockAuth);
     });
   }
@@ -65,7 +65,7 @@ describe('AuthAcquirer', () => {
 
     test('acquire should send the OAuth request and return the oauth client', async () => {
       const mockAuth = { authentication: 'mock' };
-      oauthMock.client.mockReturnValue(mockAuth);
+      oauthMock.oauthClient.mockReturnValue(mockAuth);
       persistedTokensMock.exists.mockReturnValue(false);
       setTimeout(
         () =>
@@ -79,7 +79,7 @@ describe('AuthAcquirer', () => {
         'CODEXXX',
         `http://localhost:${webhookPort}`,
       );
-      expect(oauthMock.client).toHaveBeenCalledWith(requestedTokenData);
+      expect(oauthMock.oauthClient).toHaveBeenCalledWith(requestedTokenData);
       expect(auth).toBe(mockAuth);
     });
 
@@ -91,13 +91,13 @@ describe('AuthAcquirer', () => {
 
     test('acquire should send the OAuth request and return the oauth client', async () => {
       const mockAuth = { authentication: 'mock' };
-      oauthMock.client.mockReturnValue(mockAuth);
+      oauthMock.oauthClient.mockReturnValue(mockAuth);
       persistedTokensMock.exists.mockReturnValue(false);
 
       const auth = await authAcquirer.acquire();
 
       expect(oauthMock.waitAndGetTokenData).toHaveBeenCalledWith(deviceCodeDate);
-      expect(oauthMock.client).toHaveBeenCalledWith(requestedTokenData);
+      expect(oauthMock.oauthClient).toHaveBeenCalledWith(requestedTokenData);
       expect(auth).toBe(mockAuth);
     });
 

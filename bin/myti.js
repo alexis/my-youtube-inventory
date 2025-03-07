@@ -8,12 +8,13 @@ import { Console } from 'console';
 import { stringify } from 'csv-stringify';
 
 import {
-  acquireAuth,
-  YouTube,
+  interactivelyAcquireAuth,
+  YoutubeAdapter,
+  YoutubeEventer,
   VideoCollection,
   CategoriesRegistry,
   Configuration,
-} from '#src/index.js';
+} from '../src/index.js';
 
 const configuration = new Configuration();
 
@@ -32,8 +33,9 @@ const opts = program.opts();
 
 (async () => {
   try {
-    const auth = await acquireAuth(configuration.auth);
-    const youtube = new YouTube(auth);
+    const auth = await interactivelyAcquireAuth(configuration.auth);
+    const youtube = new YoutubeAdapter(auth);
+    const youtubeEventer = new YoutubeEventer(youtube);
     const categories = new CategoriesRegistry();
     const collection = new VideoCollection();
 
@@ -42,7 +44,7 @@ const opts = program.opts();
     const console = new Console({ stdout: process.stderr, stderr: process.stderr });
 
     if (opts.dumpCategories !== undefined) {
-      const playlists = await youtube.fetchPlaylists();
+      const { playlists } = await youtube.fetchPlaylists();
       categories.addPlaylistsAsNewCategories(playlists);
 
       const categoriesJSON = JSON.stringify(categories, null, 2);
@@ -74,7 +76,7 @@ const opts = program.opts();
     let processedItems = 0;
     const abortController = new AbortController();
 
-    youtube.on('playlist:item', item => {
+    youtubeEventer.on('playlist:item', item => {
       if (!opts.max || processedItems < opts.max) {
         collection.addItem(item);
         processedItems++;
@@ -84,10 +86,10 @@ const opts = program.opts();
       }
     });
 
-    youtube.on('playlists:start', () => console.time('Execution Time'));
-    youtube.on('playlists:complete', () => console.timeEnd('Execution Time'));
+    youtubeEventer.on('playlists:start', () => console.time('Execution Time'));
+    youtubeEventer.on('playlists:complete', () => console.timeEnd('Execution Time'));
 
-    await youtube.processPlaylistItems(categories, abortController.signal);
+    await youtubeEventer.processPlaylistItems(categories, abortController.signal);
 
     console.log(`\nExtracted ${collection.size()} videos`);
 
@@ -112,7 +114,7 @@ const opts = program.opts();
         video_id: video.videoId,
         categories: video
           .playlistIds()
-          .map(id => categories.getById(id).label)
+          .map(id => categories.getById(id)?.label)
           .join(':'),
         title: video.title,
         channel_title: video.channelTitle,

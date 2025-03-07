@@ -35,8 +35,8 @@ for personal use cases, and hey, at least it works `¯\_(ツ)_/¯`.
 - Add `https://www.googleapis.com/auth/youtube.readonly` to OAuth scopes
   (https://console.cloud.google.com/auth/scopes)
 - Add yourself as a test user (https://console.cloud.google.com/apis/credentials/consent)
-- Run `npm start` and follow instructions to authorize in browser. (Note: it will save your access
-  token locally in `./OAUTH.json`, so do this at your own risk)
+- Run `npm start` and follow instructions to authorize in browser. (Note: it will save your YuuTube
+  access token locally in `./OAUTH.json`, do this at your own risk)
 
 ## Usage
 

@@ -1,4 +1,4 @@
-import { PlaylistItem } from './youtube.js';
+import { type PlaylistItem } from './youtube-adapter.js';
 
 type VideoAttrs = {
   videoId: string;
@@ -12,10 +12,12 @@ class VideoCollection {
   constructor(public videos: { [index: string]: VideoAttrs } = {}) {}
 
   addItem(item: PlaylistItem) {
-    if (!this.videos[item.videoId]) {
-      this.videos[item.videoId] = this.videoAttrs(item);
+    const vid = item.videoId;
+
+    if (!this.videos[vid]) {
+      this.videos[vid] = this.videoAttrs(item);
     } else {
-      this.videos[item.videoId].playlistMemberships[item.playlistId] = item.publishedAt;
+      this.videos[vid].playlistMemberships[item.playlistId] = item.publishedAt;
     }
   }
 

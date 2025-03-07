@@ -1,5 +1,5 @@
 import { readJsonSync, existsSync } from './utils.js';
-import { Playlist } from './youtube.js';
+import { type Playlist } from './youtube-adapter.js';
 import assert from 'assert';
 
 interface Category {
@@ -48,7 +48,7 @@ class CategoriesRegistry {
     }
   }
 
-  getById(id: string): Category {
+  getById(id: string): Category | undefined {
     return this.registry[id];
   }
 

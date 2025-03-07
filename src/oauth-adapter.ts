@@ -30,10 +30,7 @@ interface TokenErrorData {
 type TokenData = TokenSuccessData | TokenErrorData;
 
 class OAuthAdapter {
-  constructor(
-    private clientId: string,
-    private clientSecret: string,
-  ) {}
+  constructor(private clientId: string, private clientSecret: string) {}
 
   // Can be used to implement the Device flow.
   //
@@ -96,7 +93,7 @@ class OAuthAdapter {
 
   // Can be used with any OAuth flow.
   async refreshAccessToken(tokenData: TokenSuccessData): Promise<TokenSuccessData> {
-    const client = this.client(tokenData);
+    const client = this.oauthClient(tokenData);
 
     // Use google-auth-library to achive an equivalent of:
     // ```
@@ -165,7 +162,7 @@ class OAuthAdapter {
     return result;
   }
 
-  client(tokenData: TokenSuccessData): OAuth2Client {
+  oauthClient(tokenData: TokenSuccessData): OAuth2Client {
     const client = new OAuth2Client(this.clientId, this.clientSecret);
     client.setCredentials(tokenData);
     return client;
@@ -187,5 +184,5 @@ function isDeviceCodeData(response: unknown): response is DeviceCodeData {
     property => property in response,
   );
 }
-export { DeviceCodeData, TokenSuccessData, TokenErrorData, OAuth2Client };
+export type { DeviceCodeData, TokenSuccessData, TokenErrorData, OAuth2Client };
 export default OAuthAdapter;

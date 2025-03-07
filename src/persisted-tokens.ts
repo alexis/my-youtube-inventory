@@ -1,5 +1,5 @@
 import { readJsonSync, writeJsonSync, existsSync } from './utils.js';
-import { TokenSuccessData } from './oauth-adapter.js';
+import { type TokenSuccessData } from './oauth-adapter.js';
 import assert from 'assert';
 
 interface TokensFullData extends TokenSuccessData {
@@ -43,4 +43,4 @@ function isTokensFullData(response: unknown): response is TokensFullData {
 }
 
 export default PersistedTokens;
-export { TokensFullData as SavedTokenData };
+export type { TokensFullData as SavedTokenData };
